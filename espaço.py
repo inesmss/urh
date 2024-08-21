@@ -11,8 +11,10 @@ music_tracks = [
     '../images/track5nocturne.mp3',
     '../images/track6prime.mp3'
 ]
-
 pygame.init()
+meat_sound = pygame.mixer.Sound('../images/somcarne.mp3')
+
+
 WIDTH,HEIGHT = 1280, 720
 display_surface=pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption('KILL CHICKEN') 
@@ -32,7 +34,7 @@ egg_surf = pygame.image.load('../images/egg1.png').convert_alpha()
 open_egg_surf = pygame.image.load('../images/egg2.png').convert_alpha()
 present_surf = pygame.image.load('../images/gift.png').convert_alpha()
 galinha = pygame.image.load('../images/chickenwater.png').convert_alpha()
-gift2_surf = pygame.image.load('../images/gift2.png').convert_alpha()
+carne_surf = pygame.image.load('../images/meat.png').convert_alpha()
 
 
 class Star(pygame.sprite.Sprite):
@@ -144,11 +146,11 @@ class Egg(pygame.sprite.Sprite):
         self.is_present = is_gift2
 
         if self.is_gift2:
-            self.image = gift2_surf
+            self.image = carne_surf
             self.lifetime = present_lifetime
         
         else:
-            self.is_present = random.randint(1,20) == 1
+            self.is_present = random.randint(1,25) == 1
             if self.is_present:
                 self.image = present_surf
         self.lifetime = present_lifetime if self.is_present else egg_lifetime
@@ -166,6 +168,7 @@ class Egg(pygame.sprite.Sprite):
                         self.kill()
                 else:
                     self.rect.bottom = HEIGHT
+
                 self.open_egg()
         else:
             if pygame.time.get_ticks()-self.creation_time >= self.lifetime:
@@ -204,7 +207,7 @@ def collisions():
             for collided_sprite in collided_sprites:
                 if collided_sprite.is_special:
                     score += galinha_score_inc
-                    Egg(gift2_surf, collided_sprite.rect.center,collided_sprite.direction, collided_sprite.speed, (all_sprites), is_gift2=True)
+                    Egg(carne_surf, collided_sprite.rect.center,collided_sprite.direction, collided_sprite.speed, (all_sprites), is_gift2=True)
                 else:
                     score += score_increment
                     Egg(egg_surf, collided_sprite.rect.center, collided_sprite.direction, collided_sprite.speed, (all_sprites))
@@ -212,6 +215,10 @@ def collisions():
     present_collisions = pygame.sprite.spritecollide(player, all_sprites, False)
     for sprite in present_collisions:
         if isinstance(sprite, Egg) and sprite.is_present:
+            sprite.kill()
+
+            if sprite.image == carne_surf:
+                meat_sound.play()
             sprite.kill()
 
             new_track = random.choice([track for track in music_tracks if track != current_track])
@@ -264,7 +271,7 @@ while running:
         if event.type == meteor_event:
             x, y = randint(0,WIDTH), randint(-200, -100)
             
-            if random.randint(1,5) == 1:
+            if random.randint(1,30) == 1:
                 Asteroid(galinha, (x,y), (all_sprites, meteor_sprites), is_special = True)
             else:
                 Asteroid(asteroid, (x,y), (all_sprites, meteor_sprites), is_special = False)
