@@ -32,6 +32,8 @@ egg_surf = pygame.image.load('../images/egg1.png').convert_alpha()
 open_egg_surf = pygame.image.load('../images/egg2.png').convert_alpha()
 present_surf = pygame.image.load('../images/gift.png').convert_alpha()
 galinha = pygame.image.load('../images/chickenwater.png').convert_alpha()
+gift2_surf = pygame.image.load('../images/gift2.png').convert_alpha()
+
 
 class Star(pygame.sprite.Sprite):
     def __init__(self, groups, surf):
@@ -129,7 +131,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill()
 
 class Egg(pygame.sprite.Sprite): 
-    def __init__(self, surf, pos, direction, speed, groups):
+    def __init__(self, surf, pos, direction, speed, groups, is_gift2=False):
         super().__init__(groups)
         self.image = surf
         self.rect = self.image.get_rect(center = pos)
@@ -138,10 +140,17 @@ class Egg(pygame.sprite.Sprite):
         self.is_open = False
         self.creation_time = pygame.time.get_ticks() #tempo em q o presente se formou
         self.open_time = None #to track  when egg opens
+        self.is_gift2 = is_gift2 #é gift2 ?
+        self.is_present = is_gift2
 
-        self.is_present = random.randint(1,20) == 1
-        if self.is_present:
-            self.image = present_surf
+        if self.is_gift2:
+            self.image = gift2_surf
+            self.lifetime = present_lifetime
+        
+        else:
+            self.is_present = random.randint(1,20) == 1
+            if self.is_present:
+                self.image = present_surf
         self.lifetime = present_lifetime if self.is_present else egg_lifetime
             
         
@@ -195,9 +204,10 @@ def collisions():
             for collided_sprite in collided_sprites:
                 if collided_sprite.is_special:
                     score += galinha_score_inc
+                    Egg(gift2_surf, collided_sprite.rect.center,collided_sprite.direction, collided_sprite.speed, (all_sprites), is_gift2=True)
                 else:
                     score += score_increment
-                Egg(egg_surf, collided_sprite.rect.center, collided_sprite.direction, collided_sprite.speed, (all_sprites))
+                    Egg(egg_surf, collided_sprite.rect.center, collided_sprite.direction, collided_sprite.speed, (all_sprites))
 
     present_collisions = pygame.sprite.spritecollide(player, all_sprites, False)
     for sprite in present_collisions:
@@ -254,7 +264,7 @@ while running:
         if event.type == meteor_event:
             x, y = randint(0,WIDTH), randint(-200, -100)
             
-            if random.randint(1,20) == 1:
+            if random.randint(1,5) == 1:
                 Asteroid(galinha, (x,y), (all_sprites, meteor_sprites), is_special = True)
             else:
                 Asteroid(asteroid, (x,y), (all_sprites, meteor_sprites), is_special = False)
